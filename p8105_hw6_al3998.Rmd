@@ -1,0 +1,17 @@
+---
+title: "p8105_hw6_al3998"
+author: "AimingLiu"
+date: "11/15/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+```
+
+```{r message = FALSE}
+child_birth_data = read_csv("./data/birthweight.csv")
+```
+
