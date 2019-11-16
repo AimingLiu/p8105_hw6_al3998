@@ -9,8 +9,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(dplyr)
+library(modelr)
+library(mgcv)
+
+set.seed(1)
 ```
 
+## Problem 1
 ```{r message = FALSE}
 child_birth_data = read_csv("./data/birthweight.csv") %>% 
 janitor::clean_names() %>% 
@@ -63,4 +68,37 @@ model_1 = lm(bwt ~ blength + gaweeks,data = child_birth_data)
 model_2 = lm(bwt ~ bhead*blength + bhead*babysex + blength*babysex + bhead*babysex*blength,data = child_birth_data)
 ```
 
-Compare your model to two others
+
+
+### Hypothesis testing
+
+Compare my model to two others
+```{r}
+cv_df =
+  crossv_mc(child_birth_data, 100) %>% 
+  mutate(
+    train = map(train, as_tibble),
+    test = map(test, as_tibble))
+
+cv_df = 
+  cv_df %>% 
+  mutate(fit_mod = map(train,~lm(bwt ~ smoken + mrace,data = .x)),
+         model_1_mod = map(train, ~lm(bwt ~ blength + gaweeks,data = .x)),
+         model_2_mod = map(train, ~lm(bwt ~ bhead*blength + bhead*babysex + blength*babysex + bhead*babysex*blength,data = .x))) %>% 
+   mutate(rmse_fit = map2_dbl(fit_mod, test, ~rmse(model = .x, data = .y)),
+         rmse_model_1 = map2_dbl(model_1_mod, test, ~rmse(model = .x, data = .y)),
+         rmse_model_2 = map2_dbl(model_2_mod, test, ~rmse(model = .x, data = .y)))
+```
+
+```{r}
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") %>% 
+  mutate(model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
+```
+
