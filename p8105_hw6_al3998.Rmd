@@ -140,6 +140,7 @@ bootstrap_results %>%
        x = "r-squared")
 
 ```
+
 This distribution has a light tail extending to low values, features that may be related to the frequency with which some outliers are included in the bootstrap sample.
 
 ### Identify the 2.5% and 97.5% quantiles to provide a 95% confidence interval for r-squared
@@ -170,6 +171,7 @@ bootstrap_results_1 %>%
   labs(title = "the distribution of log(beta0_hat * beta1_hat)",
        x = "log(beta0_hat * beta1_hat)")
 ```
+
 This distribution is not a normal distribution,and it may do not have a lot of outliers,the shape of the distribution is almost symmetric.
 
 
