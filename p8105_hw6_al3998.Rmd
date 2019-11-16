@@ -142,6 +142,13 @@ bootstrap_results %>%
 ```
 This distribution has a light tail extending to low values, features that may be related to the frequency with which some outliers are included in the bootstrap sample.
 
+### Identify the 2.5% and 97.5% quantiles to provide a 95% confidence interval for r-squared
+```{r}
+qua_r1 = quantile(bootstrap_results$r.squared,probs = .025)
+qua_r2 = quantile(bootstrap_results$r.squared,probs = .975)
+```
+After calculating,the 95% confidence for r-squared is [0.894,0.927]
+
 
 ### show the plot of distribution of log(beta0_hat * beta1_hat)
 
@@ -165,6 +172,13 @@ bootstrap_results_1 %>%
 ```
 This distribution is not a normal distribution,and it may do not have a lot of outliers,the shape of the distribution is almost symmetric.
 
+
+### Identify the 2.5% and 97.5% quantiles to provide a 95% confidence interval for log(beta0_hat * beta1_hat)
+```{r}
+qua_log1 = quantile(bootstrap_results_1$log_coe,probs = .025)
+qua_log2 = quantile(bootstrap_results_1$log_coe,probs = .975)
+```
+After calculating,the 95% confidence for log(beta0_hat * beta1_hat) is [1.965,2.0584]
 
 
 
