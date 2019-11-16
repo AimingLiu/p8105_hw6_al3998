@@ -21,10 +21,11 @@ janitor::clean_names() %>%
 ```
 ## Propose a regression model for birthweigh
 
-Child's birth weight may depend on the factor 'wtgain' which tells us about  mother’s weight gain during pregnancy (pounds) ,'smoken' which tells us about the average number of cigarettes smoked per day during pregnancy.
+Child's birth weight may depend on the factor 'mrace' which tells us about the mother's race,'smoken' which tells us about the average number of cigarettes smoked per day during pregnancy.
+
 I fit the model in the following chunk
 ```{r}
- fit = lm(bwt ~ wtgain + mrace,data = child_birth_data)
+ fit = lm(bwt ~ smoken + mrace,data = child_birth_data)
  
   fit %>% 
   broom::tidy() %>% 
@@ -32,13 +33,29 @@ I fit the model in the following chunk
   mutate(term = str_replace(term, "^mrace", "Race: ")) %>% 
   knitr::kable()
 ```
-```{r message = FALSE}
+```{r message = FALSE }
 modelr::add_residuals(child_birth_data, fit)
 modelr::add_predictions(child_birth_data, fit)
+```
 
+### Show a plot of model residuals against mother's race
+
+```{r}
 child_birth_data %>% 
   modelr::add_residuals(fit) %>% 
-  ggplot(aes(x =mrace, y = resid)) + geom_violin()
+  ggplot(aes(x =mrace, y = resid)) + 
+  geom_violin()+
+  labs(title = "Residuals against Mother's race",x = "Mother race",y = "Residual")
+```
+
+### Show a plot of model residuals against mother's average number of cigarettes smoked per day during pregnancy
+
+```{r}
+child_birth_data %>% 
+  modelr::add_residuals(fit) %>% 
+  ggplot(aes(x = smoken, y = resid)) + 
+  geom_point(alpha = .5)+
+  labs(title = "Residuals against average number of cigarettes smoked",x = "Smoken",y = "Residual")
 ```
 
 ```{r}
@@ -46,4 +63,4 @@ model_1 = lm(bwt ~ blength + gaweeks,data = child_birth_data)
 model_2 = lm(bwt ~ bhead*blength + bhead*babysex + blength*babysex + bhead*babysex*blength,data = child_birth_data)
 ```
 
-
+Compare your model to two others
