@@ -12,6 +12,38 @@ library(dplyr)
 ```
 
 ```{r message = FALSE}
-child_birth_data = read_csv("./data/birthweight.csv")
+child_birth_data = read_csv("./data/birthweight.csv") %>% 
+janitor::clean_names() %>% 
+  mutate(babysex = factor(recode(babysex,"1" = "male","2" = "famle" )),
+        frace = factor(recode(frace,"1" = "White","2" = "Black" ,"3" = "Asian", "4"= "Puerto Rican","8"  = "Other", "9" = "Unknown")),
+        mrace = factor(recode(mrace,"1" = "White","2" = "Black" ,"3" = "Asian", "4"= "Puerto Rican","8"  = "Other")),
+        malform = factor(recode(malform,"0" = "absent","1" = "present")))
 ```
+## Propose a regression model for birthweigh
+
+Child's birth weight may depend on the factor 'wtgain' which tells us about  mother’s weight gain during pregnancy (pounds) ,'smoken' which tells us about the average number of cigarettes smoked per day during pregnancy.
+I fit the model in the following chunk
+```{r}
+ fit = lm(bwt ~ wtgain + mrace,data = child_birth_data)
+ 
+  fit %>% 
+  broom::tidy() %>% 
+  select(term, estimate, p.value) %>% 
+  mutate(term = str_replace(term, "^mrace", "Race: ")) %>% 
+  knitr::kable()
+```
+```{r message = FALSE}
+modelr::add_residuals(child_birth_data, fit)
+modelr::add_predictions(child_birth_data, fit)
+
+child_birth_data %>% 
+  modelr::add_residuals(fit) %>% 
+  ggplot(aes(x =mrace, y = resid)) + geom_violin()
+```
+
+```{r}
+model_1 = lm(bwt ~ blength + gaweeks,data = child_birth_data)
+model_2 = lm(bwt ~ bhead*blength + bhead*babysex + blength*babysex + bhead*babysex*blength,data = child_birth_data)
+```
+
 
