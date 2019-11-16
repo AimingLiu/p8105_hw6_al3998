@@ -2,7 +2,7 @@
 title: "p8105_hw6_al3998"
 author: "AimingLiu"
 date: "11/15/2019"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -101,4 +101,72 @@ pivot_longer(
   mutate(model = fct_inorder(model)) %>% 
   ggplot(aes(x = model, y = rmse)) + geom_violin()
 ```
+As we can see from the graphic of distribution of RMSE,it can be discovered that the RSME of the model using head circumference, length, sex, and all interactions is the smallest,so that we can conclude that this model is the best among these three models.
+
+## Problem 2
+```{r message = FALSE}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
+
+### show the plot of distribution of r-squared
+```{r}
+boot_straps = 
+  weather_df %>% 
+  modelr::bootstrap(n = 5000)
+
+bootstrap_results = 
+  boot_straps %>% 
+  mutate(
+    models = map(strap, ~lm(tmax ~ tmin, data = .x) ),
+    results = map(models, broom::glance)) %>% 
+  select(-strap, -models) %>% 
+  unnest(results) %>% 
+  select(r.squared,adj.r.squared) 
+  #summarize(ci_r = CI(r.squared,ci = 0.95))
+
+bootstrap_results %>% 
+  ggplot(aes(x = r.squared))+ geom_density()+
+  labs(title = "the distribution of r-squared",
+       x = "r-squared")
+
+```
+This distribution has a light tail extending to low values, features that may be related to the frequency with which some outliers are included in the bootstrap sample.
+
+
+### show the plot of distribution of log(beta0_hat * beta1_hat)
+
+```{r}
+bootstrap_results_1 = 
+  boot_straps %>% 
+  mutate(
+    models = map(strap, ~lm(tmax ~ tmin, data = .x) ),
+    results = map(models, broom::tidy)) %>% 
+  select(-strap, -models) %>% 
+  unnest(results) %>% 
+  select(.id,term,estimate) %>% 
+  pivot_wider(names_from = term,values_from = estimate) %>% 
+  janitor::clean_names() %>% 
+  mutate(log_coe = log(intercept*tmin))
+
+bootstrap_results_1 %>% 
+  ggplot(aes(x = log_coe))+ geom_density()+
+  labs(title = "the distribution of log(beta0_hat * beta1_hat)",
+       x = "log(beta0_hat * beta1_hat)")
+```
+This distribution is not a normal distribution,and it may do not have a lot of outliers,the shape of the distribution is almost symmetric.
+
+
+
+
+
 
